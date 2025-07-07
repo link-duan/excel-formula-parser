@@ -1,37 +1,32 @@
-name: Go Test Report
+name: Go Test
 
 on: [push, pull_request]
 
 permissions:
-    contents: read
-    checks: write
-    id-token: write
+  contents: write
+  checks: write
+  id-token: write
 
 jobs:
   test:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
         with:
           go-version: 1.24
-
-      - name: Install gotestsum
-        run: go install gotest.tools/gotestsum@latest
-
-      - name: Run tests and generate report
-        run: |
-          mkdir -p test-report
-          $(go env GOPATH)/bin/gotestsum --junitfile test-report/report.xml --format standard-verbose ./...
-
-      - name: Upload test report
-        uses: actions/upload-artifact@v4
+      - uses: actions/setup-go@v3
+      - name: go test
+        run: go test ./... -coverprofile=./cover.out -covermode=atomic -coverpkg=./...
+      - name: check test coverage
+        uses: vladopajic/go-test-coverage@v2
         with:
-          name: go-test-report
-          path: test-report/report.xml
+          profile: cover.out
+          threshold-total: 95
 
-      - name: Publish Test Results to GitHub UI
-        uses: mikepenz/action-junit-report@v4
-        with:
-          report_paths: 'test-report/*.xml'
+          ## when token is not specified (value '') this feature is turned off
+          ## in this example badge is created and committed only for main branch
+          git-token: ${{ github.ref_name == 'main' && secrets.GITHUB_TOKEN || '' }}
+          ## name of branch where badges are stored
+          ## ideally this should be orphan branch (see below how to create this branch)
+          git-branch: badges
