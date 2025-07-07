@@ -1,11 +1,10 @@
-<center>
-  <h1>excel-formula-parser</h1>
-  <i>A parser for excel-formula written in pure Go</i>
-  <p>
-    <img src="https://goreportcard.com/badge/github.com/link-duan/excel-formula-parser"/>
-    <img src="https://github.com/link-duan/excel-formula-parser/actions/workflows/go.yml/badge.svg"/>
-  </p>
-</center>
+<h1 align="center">excel-formula-parser</h1>
+<p align="center"><i>A parser for excel-formula written in pure Go</i></p>
+<p align="center">
+  <img src="https://goreportcard.com/badge/github.com/link-duan/excel-formula-parser"/>
+  <img src="https://github.com/link-duan/excel-formula-parser/actions/workflows/go.yml/badge.svg"/>
+  <img src="https://raw.githubusercontent.com/link-duan/excel-formula-parser/badges/.badges/main/coverage.svg"/>
+</p>
 
 ## Supportted syntax
 - [x] Math operations (eg. `+ - * / ^ %`)

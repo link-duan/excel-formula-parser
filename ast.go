@@ -221,23 +221,3 @@ type CellExpr struct {
 func (c *CellExpr) String() string {
 	return fmt.Sprintf("CellExpr(%s)", c.Ident.Raw)
 }
-
-type AbsoluteRowExpr struct {
-	*baseNode
-	Ident *Token // The absolute row reference (e.g., $1, $2)
-	Row   int    // starts from 0
-}
-
-func (a *AbsoluteRowExpr) String() string {
-	return fmt.Sprintf("AbsoluteRowExpr(%s)", a.Ident.Raw)
-}
-
-type AbsoluteColExpr struct {
-	*baseNode
-	Ident *Token // The absolute column reference (e.g., $A, $B)
-	Col   int    // starts from 0
-}
-
-func (a *AbsoluteColExpr) String() string {
-	return fmt.Sprintf("AbsoluteColExpr(%s)", a.Ident.Raw)
-}
