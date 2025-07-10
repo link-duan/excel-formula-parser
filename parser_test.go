@@ -7,6 +7,7 @@ func TestParse(t *testing.T) {
 		src      string
 		expected string
 	}{
+		{"=-A1", "UnaryExpr(Operator: -, Operand: CellExpr(A1))"},
 		{"=10%", "UnaryExpr(Operator: %, Operand: LiteralExpr(Value: 10))"},
 		{"=A1^B1", "BinaryExpr(Left: CellExpr(A1), Operator: ^, Right: CellExpr(B1))"},
 		{"=A1&B1", "BinaryExpr(Left: CellExpr(A1), Operator: &, Right: CellExpr(B1))"},
