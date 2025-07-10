@@ -17,7 +17,7 @@ jobs:
           go-version: 1.24
       - uses: actions/setup-go@v3
       - name: go test
-        run: go test ./... -coverprofile=./coverage.txt
+        run: go test -coverprofile=./coverage.txt -covermode=atomic ./...
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v5
         with:
