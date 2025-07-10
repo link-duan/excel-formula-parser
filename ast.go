@@ -44,7 +44,7 @@ const (
 	Plus               // +
 	Colon              // :
 	Minus              // -
-	Connect            // &
+	Concat             // &
 	Equal              // =
 	NotEqual           // <>
 	LessThan           // <

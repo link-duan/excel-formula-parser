@@ -84,6 +84,9 @@ func (l *lexer) next() (*Token, error) {
 		return newToken(l.pos, l.pos, Divide, "/"), nil
 	case '$':
 		return l.absoluteReference()
+	case '&':
+		l.nextch()
+		return newToken(l.pos, l.pos, Concat, "&"), nil
 	case '%':
 		l.nextch()
 		return newToken(l.pos, l.pos, Percent, "%"), nil

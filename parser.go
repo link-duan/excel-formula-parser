@@ -81,7 +81,7 @@ func (p *Parser) connection() (Node, error) {
 	if p.token == nil {
 		return left, nil // No more tokens, return the left node
 	}
-	for p.token != nil && p.token.Type == Connect {
+	for p.token != nil && p.token.Type == Concat {
 		var op = p.token
 		if err := p.advance(); err != nil { // consume the operator token
 			return nil, err
