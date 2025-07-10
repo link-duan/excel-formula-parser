@@ -7,6 +7,7 @@ func TestParse(t *testing.T) {
 		src      string
 		expected string
 	}{
+		{"=$A:$A", "RangeExpr(CellExpr($A):CellExpr($A))"},
 		{"=$1:1", "RangeExpr(CellExpr($1):CellExpr(1))"},
 		{"=A:B", "RangeExpr(CellExpr(A):CellExpr(B))"},
 		{"=1:1", "RangeExpr(CellExpr(1):CellExpr(1))"},
