@@ -222,3 +222,30 @@ type CellExpr struct {
 func (c *CellExpr) String() string {
 	return fmt.Sprintf("CellExpr(%s)", c.Ident.Raw)
 }
+
+type ArrayExpr struct {
+	*baseNode
+	BraceOpen  *Token   // The opening brace token {
+	Elements   [][]Node // [row][column] of expressions
+	BraceClose *Token   // The closing brace token }
+}
+
+func (a *ArrayExpr) String() string {
+	var sb strings.Builder
+	sb.WriteString("ArrayExpr(")
+	for i, row := range a.Elements {
+		if i > 0 {
+			sb.WriteString(", ")
+		}
+		sb.WriteString("[")
+		for j, col := range row {
+			if j > 0 {
+				sb.WriteString(", ")
+			}
+			sb.WriteString(col.String())
+		}
+		sb.WriteString("]")
+	}
+	sb.WriteString(")")
+	return sb.String()
+}

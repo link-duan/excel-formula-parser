@@ -7,7 +7,11 @@ func TestParse(t *testing.T) {
 		src      string
 		expected string
 	}{
+		{"={1,2;3,4}", "ArrayExpr([LiteralExpr(Value: 1), LiteralExpr(Value: 2)], [LiteralExpr(Value: 3), LiteralExpr(Value: 4)])"},
+		{"=-{-1}", "UnaryExpr(Operator: -, Operand: ArrayExpr([LiteralExpr(Value: -1)]))"},
+		{"=--1", "UnaryExpr(Operator: -, Operand: LiteralExpr(Value: -1))"},
 		{"=-A1", "UnaryExpr(Operator: -, Operand: CellExpr(A1))"},
+		{"=\"abcd\"", "LiteralExpr(Value: \"abcd\")"},
 		{"=10%", "UnaryExpr(Operator: %, Operand: LiteralExpr(Value: 10))"},
 		{"=A1^B1", "BinaryExpr(Left: CellExpr(A1), Operator: ^, Right: CellExpr(B1))"},
 		{"=A1&B1", "BinaryExpr(Left: CellExpr(A1), Operator: &, Right: CellExpr(B1))"},

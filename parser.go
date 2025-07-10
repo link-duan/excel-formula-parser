@@ -35,7 +35,7 @@ func (p *Parser) Parse() (Node, error) {
 		return nil, err
 	}
 	if p.token != nil {
-		return nil, newParseError(p.token.Start, "unexpected token at end %s %v", p.token.Raw, p.token.Type)
+		return nil, newParseError(p.token.Start, "unexpected token at end %s type=%v", p.token.Raw, p.token.Type)
 	}
 	return res, nil
 }
@@ -201,7 +201,7 @@ func (p *Parser) percent() (Node, error) {
 }
 
 func (p *Parser) negation() (Node, error) {
-	if p.token != nil && p.token.Type == Minus {
+	if p.token != nil && (p.token.Type == Minus || p.token.Type == Plus) {
 		var op = p.token
 		if err := p.advance(); err != nil { // consume the operator token
 			return nil, err
@@ -210,11 +210,21 @@ func (p *Parser) negation() (Node, error) {
 		if err != nil {
 			return nil, err
 		}
+		if lit, ok := right.(*LiteralExpr); ok && lit.Value.Type == Number {
+			if isDigit([]rune(lit.Value.Raw)[0]) { // combine '-' / '+' with number literal
+				lit.start = op.Start                   // Adjust start position to the operator
+				lit.Value.Raw = op.Raw + lit.Value.Raw // Prepend the operator to the literal value
+				return lit, nil
+			}
+		}
 		return &UnaryExpr{
 			baseNode: newBaseNode(op.Start, op.End),
 			Operator: op,
 			Operand:  right,
 		}, nil
+	}
+	if p.token != nil && p.token.Type == BraceOpen {
+		return p.arrayExpr()
 	}
 	return p.rangeExpr()
 }
@@ -312,7 +322,7 @@ func (p *Parser) primary() (Node, error) {
 	switch p.token.Type {
 	case ParenOpen:
 		return p.parenthesized()
-	case String, Number, BoolLiteral:
+	case String, Number, BoolLiteral, EValue:
 		if err := p.advance(); err != nil { // consume the token
 			return nil, err
 		}
@@ -384,8 +394,72 @@ func (p *Parser) primary() (Node, error) {
 			ColAbsolute: true,
 		}, nil
 	default:
-		return nil, newParseError(tk.Start, "unexpected token %s", tk.Raw)
+		return nil, newParseError(tk.Start, "unexpected token %s (type=%v)", tk.Raw, tk.Type)
 	}
+}
+
+func (p *Parser) arrayExpr() (Node, error) {
+	var braceOpen = p.token
+	if err := p.advance(); err != nil { // consume the '{' token
+		return nil, err
+	}
+	var row_index = 0
+	var values = [][]Node{}
+	for p.token != nil && p.token.Type != BraceClose {
+		if row_index > 0 {
+			// expected a semicolon as row separator
+			if p.token.Type != Semicolon {
+				return nil, newParseError(p.token.Start, "expected a semicolon to separate rows in array, got %s (type=%v)", p.token.Raw, p.token.Type)
+			}
+			if err := p.advance(); err != nil { // consume the ';' token
+				return nil, err
+			}
+			if p.token == nil {
+				break
+			}
+		}
+		var col_index = 0
+		var row_values = []Node{}
+		for p.token != nil && (p.token.Type != Semicolon && p.token.Type != BraceClose) {
+			if col_index > 0 {
+				// expected a comma as col separator
+				if p.token.Type != Comma {
+					return nil, newParseError(p.token.Start, "expected a comma to separate columns in array, got %s (type=%v)", p.token.Raw, p.token.Type)
+				}
+				if err := p.advance(); err != nil { // consume the ',' token
+					return nil, err
+				}
+				if p.token == nil {
+					break
+				}
+			}
+			value, err := p.negation()
+			if err != nil {
+				return nil, err
+			}
+			row_values = append(row_values, value)
+			col_index += 1
+		}
+		values = append(values, row_values)
+		row_index += 1
+	}
+	// expect a '}' token to close the array literal
+	if p.token == nil {
+		return nil, newParseError(braceOpen.Start, "unexpected end of input, expected '}' to close array literal")
+	}
+	if p.token.Type != BraceClose {
+		return nil, newParseError(p.lexer.pos, "expected '}' to close array literal, got %s (type=%v)", p.token.Raw, p.token.Type)
+	}
+	var braceClose = p.token
+	if err := p.advance(); err != nil { // consume the '}' token
+		return nil, err
+	}
+	return &ArrayExpr{
+		baseNode:   newBaseNode(braceOpen.Start, braceClose.End),
+		BraceOpen:  braceOpen,
+		Elements:   values,
+		BraceClose: braceClose,
+	}, nil
 }
 
 func (p *Parser) functionCall() (Node, error) {
