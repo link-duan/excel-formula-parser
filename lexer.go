@@ -116,6 +116,8 @@ func (l *lexer) next() (*Token, error) {
 		default:
 			return newToken(start, l.pos, GreaterThan, ">"), nil
 		}
+	case '#':
+		return l.errValue()
 	default:
 		if isDigit(l.ch) {
 			return l.number()
@@ -147,6 +149,12 @@ func (l *lexer) nextch() {
 		l.offset++
 	} else {
 		l.ch = -1
+	}
+}
+
+func (l *lexer) eat(n int) {
+	for i := 0; i < n; i++ {
+		l.nextch()
 	}
 }
 
@@ -203,6 +211,33 @@ func (l *lexer) absoluteReference() (*Token, error) {
 		return newToken(start, end, AbsoluteColumn, string(l.src[startOffset:endOffset])), nil
 	}
 	return nil, newLexError(l.pos, "invalid absolute reference after '$'")
+}
+
+func (l *lexer) errValue() (*Token, error) {
+	var values = []string{
+		"#NULL!",
+		"#DIV/0!",
+		"#VALUE!",
+		"#REF!",
+		"#NAME?",
+		"#NUM!",
+		"#N/A",
+	}
+	for _, value := range values {
+		// check length
+		if l.offset-1+len(value) > len(l.src) {
+			continue // Not enough characters left for this error value
+		}
+		if string(l.src[l.offset-1:l.offset-1+len(value)]) == value {
+			var start = l.pos
+			l.eat(len(value) - 1) // Consume the error value
+			var end = l.pos
+			l.offset += len(value) - 1 // Adjust offset to skip the error value
+			l.ch = l.peekChar()        // Update current character
+			return newToken(start, end, EValue, value), nil
+		}
+	}
+	return nil, newLexError(l.pos, "unrecognized error value")
 }
 
 func (l *lexer) stringLiteral(quote rune) (*Token, error) {

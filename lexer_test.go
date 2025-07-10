@@ -10,6 +10,9 @@ func TestLexer(t *testing.T) {
 		src      string
 		expected TokenType
 	}{
+		{"#DIV/0!", EValue},
+		{"#VALUE!", EValue},
+		{"#N/A", EValue},
 		{"A$123", Cell},
 		{"$A$1", Cell},
 		{"A1", Cell},

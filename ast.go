@@ -28,6 +28,7 @@ const (
 	Number
 	String
 	BoolLiteral        // TRUE or FALSE
+	EValue             // Error value (e.g., #DIV/0!, #VALUE!, etc)
 	Exclamation        // !
 	BraceOpen          // {
 	BraceClose         // }
