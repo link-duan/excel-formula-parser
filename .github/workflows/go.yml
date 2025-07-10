@@ -17,16 +17,8 @@ jobs:
           go-version: 1.24
       - uses: actions/setup-go@v3
       - name: go test
-        run: go test ./... -coverprofile=./cover.out -covermode=atomic -coverpkg=./...
-      - name: check test coverage
-        uses: vladopajic/go-test-coverage@v2
+        run: go test ./... -coverprofile=./coverage.txt
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v5
         with:
-          profile: cover.out
-          threshold-total: 75
-
-          ## when token is not specified (value '') this feature is turned off
-          ## in this example badge is created and committed only for main branch
-          git-token: ${{ github.ref_name == 'main' && secrets.GITHUB_TOKEN || '' }}
-          ## name of branch where badges are stored
-          ## ideally this should be orphan branch (see below how to create this branch)
-          git-branch: badges
+          token: ${{ secrets.CODECOV_TOKEN }}
