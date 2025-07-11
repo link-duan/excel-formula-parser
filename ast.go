@@ -27,34 +27,35 @@ const (
 	Ident TokenType = iota + 1
 	Number
 	String
-	BoolLiteral        // TRUE or FALSE
-	EValue             // Error value (e.g., #DIV/0!, #VALUE!, etc)
-	Exclamation        // !
-	BraceOpen          // {
-	BraceClose         // }
-	BracketOpen        // [
-	BracketClose       // ]
-	ParenOpen          // (
-	ParenClose         // )
-	Comma              // ,
-	Semicolon          // ;
-	Percent            // %
-	Exponentiation     // ^
-	Multiply           // *
-	Divide             // /
-	Plus               // +
-	Colon              // :
-	Minus              // -
-	Concat             // &
-	Equal              // =
-	NotEqual           // <>
-	LessThan           // <
-	GreaterThan        // >
-	LessThanOrEqual    // <=
-	GreaterThanOrEqual // >=
-	Cell               // e.g., A1, B2, etc
-	AbsoluteRow        // Absolute row reference (e.g., $1, $2)
-	AbsoluteColumn     // Absolute column reference (e.g., $A, $B)
+	BoolLiteral          // TRUE or FALSE
+	EValue               // Error value (e.g., #DIV/0!, #VALUE!, etc)
+	Exclamation          // !
+	BraceOpen            // {
+	BraceClose           // }
+	BracketOpen          // [
+	BracketClose         // ]
+	ParenOpen            // (
+	ParenClose           // )
+	Comma                // ,
+	Semicolon            // ;
+	ImplicitIntersection // @
+	Percent              // %
+	Exponentiation       // ^
+	Multiply             // *
+	Divide               // /
+	Plus                 // +
+	Colon                // :
+	Minus                // -
+	Concat               // &
+	Equal                // =
+	NotEqual             // <>
+	LessThan             // <
+	GreaterThan          // >
+	LessThanOrEqual      // <=
+	GreaterThanOrEqual   // >=
+	Cell                 // e.g., A1, B2, etc
+	AbsoluteRow          // Absolute row reference (e.g., $1, $2)
+	AbsoluteColumn       // Absolute column reference (e.g., $A, $B)
 )
 
 type Pos struct {

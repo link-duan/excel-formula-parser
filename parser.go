@@ -226,6 +226,26 @@ func (p *Parser) negation() (Node, error) {
 	if p.token != nil && p.token.Type == BraceOpen {
 		return p.arrayExpr()
 	}
+	return p.implicitIntersection()
+}
+
+func (p *Parser) implicitIntersection() (Node, error) {
+	if p.token != nil && p.token.Type == ImplicitIntersection {
+		var start = p.token.Start
+		var op = p.token
+		if err := p.advance(); err != nil { // consume the token
+			return nil, err
+		}
+		operand, err := p.rangeExpr()
+		if err != nil {
+			return nil, err
+		}
+		return &UnaryExpr{
+			baseNode: newBaseNode(start, operand.End()),
+			Operator: op,
+			Operand:  operand,
+		}, nil
+	}
 	return p.rangeExpr()
 }
 

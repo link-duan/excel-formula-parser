@@ -32,6 +32,7 @@ func (l *lexer) next() (*Token, error) {
 	for l.ch == ' ' || l.ch == '\n' || l.ch == '\t' {
 		l.nextch()
 	}
+	var start = l.pos
 	switch l.ch {
 	case '"':
 		return l.stringLiteral(l.ch)
@@ -39,60 +40,60 @@ func (l *lexer) next() (*Token, error) {
 		return l.stringLiteral(l.ch)
 	case '=':
 		l.nextch()
-		return newToken(l.pos, l.pos, Equal, "="), nil
+		return newToken(start, start, Equal, "="), nil
 	case '!':
 		l.nextch()
-		return newToken(l.pos, l.pos, Exclamation, "!"), nil
+		return newToken(start, start, Exclamation, "!"), nil
 	case ',':
 		l.nextch()
-		return newToken(l.pos, l.pos, Comma, ","), nil
+		return newToken(start, start, Comma, ","), nil
 	case '(':
 		l.nextch()
-		return newToken(l.pos, l.pos, ParenOpen, "("), nil
+		return newToken(start, start, ParenOpen, "("), nil
 	case ')':
 		l.nextch()
-		return newToken(l.pos, l.pos, ParenClose, ")"), nil
+		return newToken(start, start, ParenClose, ")"), nil
 	case '{':
 		l.nextch()
-		return newToken(l.pos, l.pos, BraceOpen, "{"), nil
+		return newToken(start, start, BraceOpen, "{"), nil
 	case '}':
 		l.nextch()
-		return newToken(l.pos, l.pos, BraceClose, "}"), nil
+		return newToken(start, start, BraceClose, "}"), nil
 	case '[':
 		l.nextch()
-		return newToken(l.pos, l.pos, BracketOpen, "["), nil
+		return newToken(start, start, BracketOpen, "["), nil
 	case ']':
 		l.nextch()
-		return newToken(l.pos, l.pos, BracketClose, "]"), nil
+		return newToken(start, start, BracketClose, "]"), nil
 	case ':':
 		l.nextch()
-		return newToken(l.pos, l.pos, Colon, ":"), nil
+		return newToken(start, start, Colon, ":"), nil
 	case ';':
 		l.nextch()
-		return newToken(l.pos, l.pos, Semicolon, ";"), nil
+		return newToken(start, start, Semicolon, ";"), nil
 	case '+':
 		l.nextch()
-		return newToken(l.pos, l.pos, Plus, "+"), nil
+		return newToken(start, start, Plus, "+"), nil
 	case '-':
 		l.nextch()
-		return newToken(l.pos, l.pos, Minus, "-"), nil
+		return newToken(start, start, Minus, "-"), nil
 	case '*':
 		l.nextch()
-		return newToken(l.pos, l.pos, Multiply, "*"), nil
+		return newToken(start, start, Multiply, "*"), nil
 	case '/':
 		l.nextch()
-		return newToken(l.pos, l.pos, Divide, "/"), nil
+		return newToken(start, start, Divide, "/"), nil
 	case '$':
 		return l.absoluteReference()
 	case '&':
 		l.nextch()
-		return newToken(l.pos, l.pos, Concat, "&"), nil
+		return newToken(start, start, Concat, "&"), nil
 	case '^':
 		l.nextch()
-		return newToken(l.pos, l.pos, Exponentiation, "^"), nil
+		return newToken(start, start, Exponentiation, "^"), nil
 	case '%':
 		l.nextch()
-		return newToken(l.pos, l.pos, Percent, "%"), nil
+		return newToken(start, start, Percent, "%"), nil
 	case '<':
 		var start = l.pos
 		l.nextch()
@@ -118,6 +119,9 @@ func (l *lexer) next() (*Token, error) {
 		}
 	case '#':
 		return l.errValue()
+	case '@':
+		l.nextch()
+		return newToken(start, start, ImplicitIntersection, "@"), nil
 	default:
 		if isDigit(l.ch) {
 			return l.number()
@@ -224,16 +228,15 @@ func (l *lexer) errValue() (*Token, error) {
 		"#N/A",
 	}
 	for _, value := range values {
+		_len := utf8.RuneCountInString(value)
 		// check length
-		if l.offset-1+len(value) > len(l.src) {
+		if l.offset-1+_len > len(l.src) {
 			continue // Not enough characters left for this error value
 		}
-		if string(l.src[l.offset-1:l.offset-1+len(value)]) == value {
+		if string(l.src[l.offset-1:l.offset-1+_len]) == value {
 			var start = l.pos
-			l.eat(len(value) - 1) // Consume the error value
+			l.eat(_len) // Consume the error value
 			var end = l.pos
-			l.offset += len(value) - 1 // Adjust offset to skip the error value
-			l.ch = l.peekChar()        // Update current character
 			return newToken(start, end, EValue, value), nil
 		}
 	}
@@ -244,25 +247,21 @@ func (l *lexer) stringLiteral(quote rune) (*Token, error) {
 	var start = l.pos
 	var end = start
 	l.nextch() // Consume the opening quote
-	for l.ch != quote && l.ch >= 0 {
+	for l.ch >= 0 {
 		if l.ch == '\n' {
 			return nil, newLexError(l.pos, "newline in string literal")
 		}
-		if l.ch == '\\' {
-			l.nextch()
-			switch {
-			case l.ch < 0:
-				return nil, newLexError(l.pos, "unclosed string literal")
-			case l.ch == quote || l.ch == '\\':
-				// Consume the escaped character
-			default:
-				return nil, newLexError(l.pos, "invalid escape sequence in string literal")
+		if l.ch == quote {
+			if l.peekChar() == quote {
+				l.nextch()
+			} else {
+				break
 			}
 		}
 		end = l.pos
 		l.nextch()
 	}
-	if l.ch < 0 {
+	if l.ch != quote {
 		return nil, newLexError(l.pos, "unclosed string literal")
 	}
 	end = l.pos // Update end to the position after the closing quote
@@ -315,7 +314,7 @@ func (l *lexer) ident() (*Token, error) {
 LOOP:
 	for l.ch >= 0 {
 		switch {
-		case isASCIILetter(l.ch) || isDigit(l.ch):
+		case isASCIILetter(l.ch) || isDigit(l.ch) || l.ch == '.':
 			end = l.pos
 			endOffset = l.offset
 			l.nextch()

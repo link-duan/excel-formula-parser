@@ -7,6 +7,10 @@ func TestParse(t *testing.T) {
 		src      string
 		expected string
 	}{
+		{`=+ AName- (-+-+-2^6) = {"A","B"} + @SUM(A1) + (@ERROR.TYPE(#VALUE!) = 2)`, `BinaryExpr(Left: BinaryExpr(Left: UnaryExpr(Operator: +, Operand: IdentExpr(Name: AName)), Operator: -, Right: ParenthesizedExpr(Inner: BinaryExpr(Left: UnaryExpr(Operator: -, Operand: UnaryExpr(Operator: +, Operand: UnaryExpr(Operator: -, Operand: UnaryExpr(Operator: +, Operand: LiteralExpr(Value: -2))))), Operator: ^, Right: LiteralExpr(Value: 6)))), Operator: =, Right: BinaryExpr(Left: BinaryExpr(Left: ArrayExpr([LiteralExpr(Value: "A"), LiteralExpr(Value: "B")]), Operator: +, Right: UnaryExpr(Operator: @, Operand: FunCallExpr(Name: SUM, Arguments: [CellExpr(A1)]))), Operator: +, Right: ParenthesizedExpr(Inner: BinaryExpr(Left: UnaryExpr(Operator: @, Operand: FunCallExpr(Name: ERROR.TYPE, Arguments: [LiteralExpr(Value: #VALUE!)])), Operator: =, Right: LiteralExpr(Value: 2)))))`},
+		{"=@A:A", "UnaryExpr(Operator: @, Operand: RangeExpr(CellExpr(A):CellExpr(A)))"},
+		{`=IF("a"={"a","b";"c",#N/A;-1,TRUE}, "yes", "no") &   "  more ""test"" text"`, `BinaryExpr(Left: FunCallExpr(Name: IF, Arguments: [BinaryExpr(Left: LiteralExpr(Value: "a"), Operator: =, Right: ArrayExpr([LiteralExpr(Value: "a"), LiteralExpr(Value: "b")], [LiteralExpr(Value: "c"), LiteralExpr(Value: #N/A)], [LiteralExpr(Value: -1), LiteralExpr(Value: TRUE)])), LiteralExpr(Value: "yes"), LiteralExpr(Value: "no")]), Operator: &, Right: LiteralExpr(Value: "  more ""test"" text"))`},
+		{"={#N/A}", "ArrayExpr([LiteralExpr(Value: #N/A)])"},
 		{"={1,2;3,4}", "ArrayExpr([LiteralExpr(Value: 1), LiteralExpr(Value: 2)], [LiteralExpr(Value: 3), LiteralExpr(Value: 4)])"},
 		{"=-{-1}", "UnaryExpr(Operator: -, Operand: ArrayExpr([LiteralExpr(Value: -1)]))"},
 		{"=--1", "UnaryExpr(Operator: -, Operand: LiteralExpr(Value: -1))"},

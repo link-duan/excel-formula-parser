@@ -10,6 +10,9 @@ func TestLexer(t *testing.T) {
 		src      string
 		expected TokenType
 	}{
+		{"ERROR.TYPE", Ident},
+		{"@", ImplicitIntersection},
+		{`"""str"""`, String},
 		{"#DIV/0!", EValue},
 		{"#VALUE!", EValue},
 		{"#N/A", EValue},
@@ -27,8 +30,6 @@ func TestLexer(t *testing.T) {
 		{"0.230000", Number},
 		{`"hello"`, String},
 		{`'world'`, String},
-		{`'with quote\''`, String},
-		{`"with quote\""`, String},
 		{"=", Equal},
 		{"!", Exclamation},
 		{",", Comma},
