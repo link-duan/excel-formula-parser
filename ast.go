@@ -94,18 +94,18 @@ type baseNode struct {
 	end   Pos
 }
 
-func (e *baseNode) Start() Pos {
+func (e baseNode) Start() Pos {
 	return e.start
 }
 
-func (e *baseNode) End() Pos {
+func (e baseNode) End() Pos {
 	return e.end
 }
 
-func (e *baseNode) cannotBeImplemented() {}
+func (e baseNode) cannotBeImplemented() {}
 
-func newBaseNode(start, end Pos) *baseNode {
-	return &baseNode{
+func newBaseNode(start, end Pos) baseNode {
+	return baseNode{
 		start: start,
 		end:   end,
 	}
@@ -119,14 +119,14 @@ var _ Node = (*IdentExpr)(nil)
 var _ Node = (*RangeExpr)(nil)
 
 type FunCallExpr struct {
-	*baseNode
+	baseNode
 	Name       *Token // Function name token
 	ParanOpen  *Token
 	Arguments  []Node // Arguments can be any expression type
 	ParanClose *Token
 }
 
-func (f *FunCallExpr) String() string {
+func (f FunCallExpr) String() string {
 	var sb strings.Builder
 	sb.WriteString("FunCallExpr(Name: ")
 	sb.WriteString(f.Name.Raw)
@@ -142,7 +142,7 @@ func (f *FunCallExpr) String() string {
 }
 
 type BinaryExpr struct {
-	*baseNode
+	baseNode
 	Left     Node   // Left operand
 	Operator *Token // Operator token (e.g., +, -, *, /)
 	Right    Node   // Right operand
@@ -153,53 +153,53 @@ func (b *BinaryExpr) String() string {
 }
 
 type UnaryExpr struct {
-	*baseNode
+	baseNode
 	Operator *Token // Operator token (e.g., !, -)
 	Operand  Node   // Operand expression
 }
 
-func (u *UnaryExpr) String() string {
+func (u UnaryExpr) String() string {
 	return fmt.Sprintf("UnaryExpr(Operator: %s, Operand: %s)", u.Operator.Raw, u.Operand)
 }
 
 type LiteralExpr struct {
-	*baseNode
+	baseNode
 	Value *Token // Token representing the literal value (e.g., number, string, boolean)
 }
 
-func (l *LiteralExpr) String() string {
+func (l LiteralExpr) String() string {
 	return fmt.Sprintf("LiteralExpr(Value: %s)", l.Value.Raw)
 }
 
 type IdentExpr struct {
-	*baseNode
+	baseNode
 	Name *Token
 }
 
-func (i *IdentExpr) String() string {
+func (i IdentExpr) String() string {
 	return fmt.Sprintf("IdentExpr(Name: %s)", i.Name.Raw)
 }
 
 type ParenthesizedExpr struct {
-	*baseNode
+	baseNode
 	ParenOpen  *Token // The opening parenthesis
 	Inner      Node   // The expression inside the parentheses
 	ParenClose *Token // The closing parenthesis
 }
 
-func (p *ParenthesizedExpr) String() string {
+func (p ParenthesizedExpr) String() string {
 	return fmt.Sprintf("ParenthesizedExpr(Inner: %s)", p.Inner)
 }
 
 type RangeExpr struct {
-	*baseNode
+	baseNode
 
 	Begin  Node     // Start of the range (e.g., A1, A, 1)
 	Colons []*Token // Colon tokens (e.g., : between A1 and B2)
 	Ends   []Node   // End of the range (e.g., B2, B, 2)
 }
 
-func (r *RangeExpr) String() string {
+func (r RangeExpr) String() string {
 	var sb strings.Builder
 	sb.WriteString("RangeExpr(")
 	sb.WriteString(r.Begin.String())
@@ -212,7 +212,7 @@ func (r *RangeExpr) String() string {
 }
 
 type CellExpr struct {
-	*baseNode
+	baseNode
 	Ident       *Token // The cell identifier (e.g., A1, B2)
 	Row         int    // starts from 0. -1 indicates a full column reference (e.g., A:A)
 	Col         int    // starts from 0. -1 indicates a full row reference (e.g., 1:1)
@@ -220,18 +220,18 @@ type CellExpr struct {
 	ColAbsolute bool   // true if the column is absolute (e.g., $A, $B)
 }
 
-func (c *CellExpr) String() string {
+func (c CellExpr) String() string {
 	return fmt.Sprintf("CellExpr(%s)", c.Ident.Raw)
 }
 
 type ArrayExpr struct {
-	*baseNode
+	baseNode
 	BraceOpen  *Token   // The opening brace token {
 	Elements   [][]Node // [row][column] of expressions
 	BraceClose *Token   // The closing brace token }
 }
 
-func (a *ArrayExpr) String() string {
+func (a ArrayExpr) String() string {
 	var sb strings.Builder
 	sb.WriteString("ArrayExpr(")
 	for i, row := range a.Elements {

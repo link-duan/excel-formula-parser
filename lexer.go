@@ -10,11 +10,20 @@ var keywords = map[string]TokenType{
 	"FALSE": BoolLiteral,
 }
 
+type tokenState struct {
+	tokenType     TokenType
+	tokenStartPos Pos
+	tokenEndPos   Pos
+	tokenStart    int // start offset
+	tokenEnd      int // end offset
+}
+
 type lexer struct {
 	src    []rune
 	pos    Pos
 	offset int
 	ch     rune
+	tokenState
 }
 
 func newLexer(src string) *lexer {

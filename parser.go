@@ -210,14 +210,14 @@ func (p *Parser) negation() (Node, error) {
 		if err != nil {
 			return nil, err
 		}
-		if lit, ok := right.(*LiteralExpr); ok && lit.Value.Type == Number {
+		if lit, ok := right.(LiteralExpr); ok && lit.Value.Type == Number {
 			if isDigit([]rune(lit.Value.Raw)[0]) { // combine '-' / '+' with number literal
 				lit.start = op.Start                   // Adjust start position to the operator
 				lit.Value.Raw = op.Raw + lit.Value.Raw // Prepend the operator to the literal value
 				return lit, nil
 			}
 		}
-		return &UnaryExpr{
+		return UnaryExpr{
 			baseNode: newBaseNode(op.Start, op.End),
 			Operator: op,
 			Operand:  right,
@@ -240,7 +240,7 @@ func (p *Parser) implicitIntersection() (Node, error) {
 		if err != nil {
 			return nil, err
 		}
-		return &UnaryExpr{
+		return UnaryExpr{
 			baseNode: newBaseNode(start, operand.End()),
 			Operator: op,
 			Operand:  operand,
@@ -280,7 +280,7 @@ func (p *Parser) rangeExpr() (Node, error) {
 			}
 			ends = append(ends, right)
 		}
-		return &RangeExpr{
+		return RangeExpr{
 			baseNode: newBaseNode(begin.Start(), ends[len(ends)-1].End()),
 			Begin:    begin,
 			Colons:   colons,
@@ -290,23 +290,23 @@ func (p *Parser) rangeExpr() (Node, error) {
 	return left, nil
 }
 
-func (p *Parser) tryConvertToCellExpr(node Node) (*CellExpr, error) {
-	if node, ok := node.(*CellExpr); ok {
+func (p *Parser) tryConvertToCellExpr(node Node) (Node, error) {
+	if node, ok := node.(CellExpr); ok {
 		return node, nil // Already a CellExpr, no conversion needed
 	}
-	if node, ok := node.(*IdentExpr); ok {
+	if node, ok := node.(IdentExpr); ok {
 		col := colNameToIndex(node.Name.Raw)
 		if col < 0 {
 			return nil, newParseError(node.Start(), "expected a cell reference: %s", node.Name.Raw)
 		}
-		return &CellExpr{
+		return CellExpr{
 			baseNode: newBaseNode(node.Start(), node.End()),
 			Ident:    node.Name,
 			Row:      -1, // -1 indicates a full column reference
 			Col:      col,
 		}, nil
 	}
-	if node, ok := node.(*LiteralExpr); ok {
+	if node, ok := node.(LiteralExpr); ok {
 		if node.Value.Type != Number {
 			return nil, newParseError(node.Start(), "expected a row reference, got %s", node.Value.Raw)
 		}
@@ -314,7 +314,7 @@ func (p *Parser) tryConvertToCellExpr(node Node) (*CellExpr, error) {
 		if err != nil {
 			return nil, newParseError(node.Start(), "invalid row reference: %s", err.Error())
 		}
-		return &CellExpr{
+		return CellExpr{
 			baseNode: newBaseNode(node.Start(), node.End()),
 			Ident:    node.Value,
 			Row:      row - 1, // Convert to zero-based index
@@ -346,7 +346,7 @@ func (p *Parser) primary() (Node, error) {
 		if err := p.advance(); err != nil { // consume the token
 			return nil, err
 		}
-		return &LiteralExpr{
+		return LiteralExpr{
 			baseNode: newBaseNode(tk.Start, tk.End),
 			Value:    tk,
 		}, nil
@@ -361,7 +361,7 @@ func (p *Parser) primary() (Node, error) {
 		if err := p.advance(); err != nil { // consume the token
 			return nil, err
 		}
-		return &IdentExpr{
+		return IdentExpr{
 			baseNode: newBaseNode(tk.Start, tk.End),
 			Name:     tk,
 		}, nil
@@ -374,7 +374,7 @@ func (p *Parser) primary() (Node, error) {
 		if err := p.advance(); err != nil { // consume the token
 			return nil, err
 		}
-		return &CellExpr{
+		return CellExpr{
 			baseNode:    newBaseNode(tk.Start, tk.End),
 			Ident:       tk,
 			Row:         result.row,
@@ -390,7 +390,7 @@ func (p *Parser) primary() (Node, error) {
 		if err := p.advance(); err != nil { // consume the token
 			return nil, err
 		}
-		return &CellExpr{
+		return CellExpr{
 			baseNode:    newBaseNode(tk.Start, tk.End),
 			Ident:       tk,
 			Row:         row - 1,
@@ -406,7 +406,7 @@ func (p *Parser) primary() (Node, error) {
 		if err := p.advance(); err != nil { // consume the token
 			return nil, err
 		}
-		return &CellExpr{
+		return CellExpr{
 			baseNode:    newBaseNode(tk.Start, tk.End),
 			Ident:       tk,
 			Row:         -1, // -1 indicates a full column reference
@@ -474,7 +474,7 @@ func (p *Parser) arrayExpr() (Node, error) {
 	if err := p.advance(); err != nil { // consume the '}' token
 		return nil, err
 	}
-	return &ArrayExpr{
+	return ArrayExpr{
 		baseNode:   newBaseNode(braceOpen.Start, braceClose.End),
 		BraceOpen:  braceOpen,
 		Elements:   values,
@@ -526,7 +526,7 @@ func (p *Parser) functionCall() (Node, error) {
 	if err := p.advance(); err != nil { // consume the ')' token
 		return nil, err
 	}
-	return &FunCallExpr{
+	return FunCallExpr{
 		baseNode:   newBaseNode(name.Start, paranClose.End),
 		Name:       name,
 		ParanOpen:  paranOpen,
@@ -556,7 +556,7 @@ func (p *Parser) parenthesized() (Node, error) {
 	if err := p.advance(); err != nil { // consume the ')' token
 		return nil, err
 	}
-	return &ParenthesizedExpr{
+	return ParenthesizedExpr{
 		baseNode:   newBaseNode(start, end),
 		ParenOpen:  parenOpen,
 		Inner:      expr,
