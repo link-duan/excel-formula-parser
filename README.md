@@ -8,11 +8,10 @@
   </a>
 </p>
 
-## Supportted syntax
+## Unsupportted syntax
 
-- [x] Math operations (eg. `+ - * / ^ %`)
-- [x] Cell references ( Absolute & Relative. eg. `$A$1` `A1:B2` )
-- [x] Function call
+- `R1C1` style cell reference syntax. (had been deprecated by excel)
+- intersection operator (whitespace between references)
 
 ## Usage
 
