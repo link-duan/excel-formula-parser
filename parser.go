@@ -60,7 +60,7 @@ LOOP:
 			if err != nil {
 				return nil, err
 			}
-			left = &BinaryExpr{
+			left = BinaryExpr{
 				baseNode: newBaseNode(left.Start(), right.End()),
 				Left:     left,
 				Operator: op,
@@ -90,7 +90,7 @@ func (p *Parser) connection() (Node, error) {
 		if err != nil {
 			return nil, err
 		}
-		left = &BinaryExpr{
+		left = BinaryExpr{
 			baseNode: newBaseNode(left.Start(), right.End()),
 			Left:     left,
 			Operator: op,
@@ -117,7 +117,7 @@ func (p *Parser) addition() (Node, error) {
 		if err != nil {
 			return nil, err
 		}
-		left = &BinaryExpr{
+		left = BinaryExpr{
 			baseNode: newBaseNode(left.Start(), right.End()),
 			Left:     left,
 			Operator: op,
@@ -144,7 +144,7 @@ func (p *Parser) muliplication() (Node, error) {
 		if err != nil {
 			return nil, err
 		}
-		left = &BinaryExpr{
+		left = BinaryExpr{
 			baseNode: newBaseNode(left.Start(), right.End()),
 			Left:     left,
 			Operator: op,
@@ -171,7 +171,7 @@ func (p *Parser) exponentiation() (Node, error) {
 		if err != nil {
 			return nil, err
 		}
-		left = &BinaryExpr{
+		left = BinaryExpr{
 			baseNode: newBaseNode(left.Start(), right.End()),
 			Left:     left,
 			Operator: op,
@@ -191,7 +191,7 @@ func (p *Parser) percent() (Node, error) {
 		if err := p.advance(); err != nil { // consume the operator token
 			return nil, err
 		}
-		left = &UnaryExpr{
+		left = UnaryExpr{
 			baseNode: newBaseNode(left.Start(), op.End),
 			Operator: op,
 			Operand:  left,

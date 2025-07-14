@@ -148,7 +148,7 @@ type BinaryExpr struct {
 	Right    Node   // Right operand
 }
 
-func (b *BinaryExpr) String() string {
+func (b BinaryExpr) String() string {
 	return fmt.Sprintf("BinaryExpr(Left: %s, Operator: %s, Right: %s)", b.Left, b.Operator.Raw, b.Right)
 }
 
